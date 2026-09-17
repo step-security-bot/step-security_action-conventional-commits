@@ -26,8 +26,7 @@ jobs:
 
       - name: Install dependencies
         run: |
-          rm -f package-lock.json
-          npm install
+          npm ci
 
       - name: Run tests
         run: npm test
