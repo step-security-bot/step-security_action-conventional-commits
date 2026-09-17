@@ -76592,7 +76592,7 @@ function validateSubscription() {
             const eventData = JSON.parse(external_fs_.readFileSync(eventPath, 'utf8'));
             repoPrivate = (_a = eventData === null || eventData === void 0 ? void 0 : eventData.repository) === null || _a === void 0 ? void 0 : _a.private;
         }
-        const upstream = '<original-owner>/<repo-name>';
+        const upstream = 'webiny/action-conventional-commits';
         const action = process.env.GITHUB_ACTION_REPOSITORY;
         const docsUrl = 'https://docs.stepsecurity.io/actions/stepsecurity-maintained-actions';
         core.info('');
