@@ -76674,6 +76674,7 @@ function buildApiHeaders(token) {
 }
 function fetchCommitsFromApi(url, headers) {
     return src_awaiter(this, void 0, void 0, function* () {
+        var _a, _b;
         try {
             const { body } = yield source_default().get(url, {
                 responseType: "json",
@@ -76684,7 +76685,12 @@ function fetchCommitsFromApi(url, headers) {
             }
             return [];
         }
-        catch (_a) {
+        catch (error) {
+            if ((_a = error === null || error === void 0 ? void 0 : error.response) === null || _a === void 0 ? void 0 : _a.statusCode) {
+                throw new Error(`GitHub API responded with status ${error.response.statusCode}. ` +
+                    `Verify that GITHUB_TOKEN has the required permissions.`);
+            }
+            src_core.warning(`Unable to reach GitHub API: ${(_b = error === null || error === void 0 ? void 0 : error.message) !== null && _b !== void 0 ? _b : String(error)}. Skipping commit validation.`);
             return [];
         }
     });
@@ -76715,6 +76721,17 @@ function reportResults(results) {
     }, false);
 }
 function executeAction() {
+    return src_awaiter(this, void 0, void 0, function* () {
+        var _a;
+        try {
+            yield _executeAction();
+        }
+        catch (error) {
+            src_core.setFailed((_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : String(error));
+        }
+    });
+}
+function _executeAction() {
     return src_awaiter(this, void 0, void 0, function* () {
         yield validateSubscription();
         src_core.info("Checking commit messages against the Conventional Commits specification...");

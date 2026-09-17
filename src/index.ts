@@ -73,7 +73,14 @@ async function fetchCommitsFromApi(
             return body.map((item: any) => item.commit as CommitEntry);
         }
         return [];
-    } catch {
+    } catch (error: any) {
+        if (error?.response?.statusCode) {
+            throw new Error(
+                `GitHub API responded with status ${error.response.statusCode}. ` +
+                `Verify that GITHUB_TOKEN has the required permissions.`
+            );
+        }
+        core.warning(`Unable to reach GitHub API: ${error?.message ?? String(error)}. Skipping commit validation.`);
         return [];
     }
 }
@@ -104,6 +111,14 @@ function reportResults(results: ValidationResult[]): boolean {
 }
 
 async function executeAction(): Promise<void> {
+  try {
+    await _executeAction();
+  } catch (error: any) {
+    core.setFailed(error?.message ?? String(error));
+  }
+}
+
+async function _executeAction(): Promise<void> {
     await validateSubscription()
     core.info("Checking commit messages against the Conventional Commits specification...");
 
