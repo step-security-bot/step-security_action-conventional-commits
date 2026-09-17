@@ -1,0 +1,21 @@
+name: "action-conventional-commits"
+description: >
+  Validates commit messages in pull requests and push events against
+  the Conventional Commits specification.
+inputs:
+  GITHUB_TOKEN:
+    description: >
+      GitHub token used to authenticate API requests.
+      Required for private repositories or when the default token
+      has restricted permissions.
+    required: false
+  allowed-commit-types:
+    description: >
+      Comma-separated list of accepted commit type prefixes.
+      Extend or restrict this list to match your project's commit conventions.
+    default: "feat,fix,docs,style,refactor,test,build,perf,ci,chore,revert,merge,wip"
+    required: false
+
+runs:
+  using: node24
+  main: dist/main/index.js
