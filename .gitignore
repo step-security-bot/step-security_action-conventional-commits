@@ -3,7 +3,6 @@
 .webiny
 .serverless
 .env*
-.npmrc
 htpasswd
 lerna-debug.log
 npm-debug.log
