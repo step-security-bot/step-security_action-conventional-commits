@@ -1,12 +1,17 @@
 module.exports = {
+    sourceType: "unambiguous",
     presets: [
-        '@babel/preset-typescript',
         [
-            '@babel/preset-env',
+            "@babel/preset-env",
             {
-                targets: {
-                    node: 'current',
-                },
+                targets: { node: "current" },
+                modules: "commonjs",
+            },
+        ],
+        [
+            "@babel/preset-typescript",
+            {
+                allowDeclareFields: true,
             },
         ],
     ],

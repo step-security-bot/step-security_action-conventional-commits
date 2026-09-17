@@ -1,4 +1,4 @@
-name: "action-conventional-commmits"
+name: "action-conventional-commits"
 description: >
   Validates commit messages in pull requests and push events against
   the Conventional Commits specification.

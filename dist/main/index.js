@@ -76571,67 +76571,46 @@ const {
 
 
 ;// CONCATENATED MODULE: ./src/subscription.ts
-var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 
 
 
-function validateSubscription() {
-    return __awaiter(this, void 0, void 0, function* () {
-        var _a, _b;
-        const eventPath = process.env.GITHUB_EVENT_PATH;
-        let repoPrivate;
-        if (eventPath && external_fs_.existsSync(eventPath)) {
-            const eventData = JSON.parse(external_fs_.readFileSync(eventPath, 'utf8'));
-            repoPrivate = (_a = eventData === null || eventData === void 0 ? void 0 : eventData.repository) === null || _a === void 0 ? void 0 : _a.private;
+async function validateSubscription() {
+    const eventPath = process.env.GITHUB_EVENT_PATH;
+    let repoPrivate;
+    if (eventPath && external_fs_.existsSync(eventPath)) {
+        const eventData = JSON.parse(external_fs_.readFileSync(eventPath, 'utf8'));
+        repoPrivate = eventData?.repository?.private;
+    }
+    const upstream = 'webiny/action-conventional-commits';
+    const action = process.env.GITHUB_ACTION_REPOSITORY;
+    const docsUrl = 'https://docs.stepsecurity.io/actions/stepsecurity-maintained-actions';
+    core.info('');
+    core.info('\u001b[1;36mStepSecurity Maintained Action\u001b[0m');
+    core.info(`Secure drop-in replacement for ${upstream}`);
+    if (repoPrivate === false)
+        core.info('\u001b[32m\u2713 Free for public repositories\u001b[0m');
+    core.info(`\u001b[36mLearn more:\u001b[0m ${docsUrl}`);
+    core.info('');
+    if (repoPrivate === false)
+        return;
+    const serverUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
+    const body = { action: action || '' };
+    if (serverUrl !== 'https://github.com')
+        body.ghes_server = serverUrl;
+    try {
+        await lib_axios.post(`https://agent.api.stepsecurity.io/v1/github/${process.env.GITHUB_REPOSITORY}/actions/maintained-actions-subscription`, body, { timeout: 3000 });
+    }
+    catch (error) {
+        if (axios_isAxiosError(error) && error.response?.status === 403) {
+            core.error(`\u001b[1;31mThis action requires a StepSecurity subscription for private repositories.\u001b[0m`);
+            core.error(`\u001b[31mLearn how to enable a subscription: ${docsUrl}\u001b[0m`);
+            process.exit(1);
         }
-        const upstream = 'webiny/action-conventional-commits';
-        const action = process.env.GITHUB_ACTION_REPOSITORY;
-        const docsUrl = 'https://docs.stepsecurity.io/actions/stepsecurity-maintained-actions';
-        core.info('');
-        core.info('\u001b[1;36mStepSecurity Maintained Action\u001b[0m');
-        core.info(`Secure drop-in replacement for ${upstream}`);
-        if (repoPrivate === false)
-            core.info('\u001b[32m\u2713 Free for public repositories\u001b[0m');
-        core.info(`\u001b[36mLearn more:\u001b[0m ${docsUrl}`);
-        core.info('');
-        if (repoPrivate === false)
-            return;
-        const serverUrl = process.env.GITHUB_SERVER_URL || 'https://github.com';
-        const body = { action: action || '' };
-        if (serverUrl !== 'https://github.com')
-            body.ghes_server = serverUrl;
-        try {
-            yield lib_axios.post(`https://agent.api.stepsecurity.io/v1/github/${process.env.GITHUB_REPOSITORY}/actions/maintained-actions-subscription`, body, { timeout: 3000 });
-        }
-        catch (error) {
-            if (axios_isAxiosError(error) && ((_b = error.response) === null || _b === void 0 ? void 0 : _b.status) === 403) {
-                core.error(`\u001b[1;31mThis action requires a StepSecurity subscription for private repositories.\u001b[0m`);
-                core.error(`\u001b[31mLearn how to enable a subscription: ${docsUrl}\u001b[0m`);
-                process.exit(1);
-            }
-            core.info('Timeout or API not reachable. Continuing to next step.');
-        }
-    });
+        core.info('Timeout or API not reachable. Continuing to next step.');
+    }
 }
 
 ;// CONCATENATED MODULE: ./src/index.ts
-var src_awaiter = (undefined && undefined.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
 const src_core = __nccwpck_require__(7484);
 const { context } = __nccwpck_require__(3228);
 
@@ -76670,44 +76649,41 @@ function auditCommits(commits, allowedTypes) {
     return commits.map((commit) => classifyCommit(commit, allowedTypes));
 }
 function buildApiHeaders(token) {
-    return Object.assign({ Accept: "application/vnd.github+json" }, (token ? { Authorization: `token ${token}` } : {}));
+    return {
+        Accept: "application/vnd.github+json",
+        ...(token ? { Authorization: `token ${token}` } : {}),
+    };
 }
-function fetchCommitsFromApi(url, headers) {
-    return src_awaiter(this, void 0, void 0, function* () {
-        var _a, _b;
-        try {
-            const { body } = yield source_default().get(url, {
-                responseType: "json",
-                headers,
-            });
-            if (Array.isArray(body)) {
-                return body.map((item) => item.commit);
-            }
-            return [];
-        }
-        catch (error) {
-            if ((_a = error === null || error === void 0 ? void 0 : error.response) === null || _a === void 0 ? void 0 : _a.statusCode) {
-                throw new Error(`GitHub API responded with status ${error.response.statusCode}. ` +
-                    `Verify that GITHUB_TOKEN has the required permissions.`);
-            }
-            src_core.warning(`Unable to reach GitHub API: ${(_b = error === null || error === void 0 ? void 0 : error.message) !== null && _b !== void 0 ? _b : String(error)}. Skipping commit validation.`);
-            return [];
-        }
-    });
-}
-function resolveCommits(ctx, token) {
-    return src_awaiter(this, void 0, void 0, function* () {
-        var _a, _b, _c;
-        const pushCommits = (_a = ctx === null || ctx === void 0 ? void 0 : ctx.payload) === null || _a === void 0 ? void 0 : _a.commits;
-        if (Array.isArray(pushCommits)) {
-            return pushCommits;
-        }
-        const prCommitsUrl = (_c = (_b = ctx === null || ctx === void 0 ? void 0 : ctx.payload) === null || _b === void 0 ? void 0 : _b.pull_request) === null || _c === void 0 ? void 0 : _c.commits_url;
-        if (prCommitsUrl) {
-            return fetchCommitsFromApi(prCommitsUrl, buildApiHeaders(token));
+async function fetchCommitsFromApi(url, headers) {
+    try {
+        const { body } = await source_default().get(url, {
+            responseType: "json",
+            headers,
+        });
+        if (Array.isArray(body)) {
+            return body.map((item) => item.commit);
         }
         return [];
-    });
+    }
+    catch (error) {
+        if (error?.response?.statusCode) {
+            throw new Error(`GitHub API responded with status ${error.response.statusCode}. ` +
+                `Verify that GITHUB_TOKEN has the required permissions.`);
+        }
+        src_core.warning(`Unable to reach GitHub API: ${error?.message ?? String(error)}. Skipping commit validation.`);
+        return [];
+    }
+}
+async function resolveCommits(ctx, token) {
+    const pushCommits = ctx?.payload?.commits;
+    if (Array.isArray(pushCommits)) {
+        return pushCommits;
+    }
+    const prCommitsUrl = ctx?.payload?.pull_request?.commits_url;
+    if (prCommitsUrl) {
+        return fetchCommitsFromApi(prCommitsUrl, buildApiHeaders(token));
+    }
+    return [];
 }
 function reportResults(results) {
     return results.reduce((hasViolation, result) => {
@@ -76720,42 +76696,37 @@ function reportResults(results) {
         return hasViolation || !result.valid;
     }, false);
 }
-function executeAction() {
-    return src_awaiter(this, void 0, void 0, function* () {
-        var _a;
-        try {
-            yield _executeAction();
-        }
-        catch (error) {
-            src_core.setFailed((_a = error === null || error === void 0 ? void 0 : error.message) !== null && _a !== void 0 ? _a : String(error));
-        }
-    });
+async function executeAction() {
+    try {
+        await _executeAction();
+    }
+    catch (error) {
+        src_core.setFailed(error?.message ?? String(error));
+    }
 }
-function _executeAction() {
-    return src_awaiter(this, void 0, void 0, function* () {
-        yield validateSubscription();
-        src_core.info("Checking commit messages against the Conventional Commits specification...");
-        const token = src_core.getInput("GITHUB_TOKEN");
-        const commits = yield resolveCommits(context, token);
-        if (commits.length === 0) {
-            src_core.info("No commits found to validate. Skipping.");
-            return;
-        }
-        const allowedTypes = src_core
-            .getInput("allowed-commit-types")
-            .split(",")
-            .map((t) => t.trim());
-        src_core.startGroup("Commit validation results:");
-        const results = auditCommits(commits, allowedTypes);
-        const hasViolations = reportResults(results);
-        src_core.endGroup();
-        if (hasViolations) {
-            src_core.setFailed("One or more commit messages do not follow the Conventional Commits specification.");
-        }
-        else {
-            src_core.info("All commit messages are valid and follow the Conventional Commits specification.");
-        }
-    });
+async function _executeAction() {
+    await validateSubscription();
+    src_core.info("Checking commit messages against the Conventional Commits specification...");
+    const token = src_core.getInput("GITHUB_TOKEN");
+    const commits = await resolveCommits(context, token);
+    if (commits.length === 0) {
+        src_core.info("No commits found to validate. Skipping.");
+        return;
+    }
+    const allowedTypes = src_core
+        .getInput("allowed-commit-types")
+        .split(",")
+        .map((t) => t.trim());
+    src_core.startGroup("Commit validation results:");
+    const results = auditCommits(commits, allowedTypes);
+    const hasViolations = reportResults(results);
+    src_core.endGroup();
+    if (hasViolations) {
+        src_core.setFailed("One or more commit messages do not follow the Conventional Commits specification.");
+    }
+    else {
+        src_core.info("All commit messages are valid and follow the Conventional Commits specification.");
+    }
 }
 if (process.env.NODE_ENV !== "test") {
     executeAction();

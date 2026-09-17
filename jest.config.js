@@ -1,6 +1,12 @@
 module.exports = {
-    clearMocks: true,
-    coverageDirectory: "coverage",
     testEnvironment: "node",
-    testMatch: ["**/tests/**/*.test.ts"],
+    roots: ["<rootDir>/tests"],
+    testRegex: "\\.test\\.ts$",
+    transform: {
+        "^.+\\.ts$": "babel-jest",
+    },
+    moduleFileExtensions: ["ts", "js", "json"],
+    clearMocks: true,
+    verbose: true,
+    coverageDirectory: "coverage",
 };
