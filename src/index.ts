@@ -1,6 +1,7 @@
 const core = require("@actions/core");
 const { context } = require("@actions/github");
 import got from "got";
+import { validateSubscription } from "./subscription";
 
 type CommitEntry = {
     message: string;
@@ -103,6 +104,7 @@ function reportResults(results: ValidationResult[]): boolean {
 }
 
 async function executeAction(): Promise<void> {
+    await validateSubscription()
     core.info("Checking commit messages against the Conventional Commits specification...");
 
     const token = core.getInput("GITHUB_TOKEN");
